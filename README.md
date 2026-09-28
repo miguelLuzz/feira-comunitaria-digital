@@ -27,7 +27,7 @@ Regras de estoque e cancelamento; dados inválidos; concorrência pela última u
 
 Há um único produtor administrador; contas múltiplas, pagamentos e agendamento de retirada não estão implementados. A sessão administrativa expira em 30 minutos; o limite por IP é simplificado e precisará ser revisto atrás de proxy. SQLite atende demonstração local, não prova escalabilidade. O ambiente público precisará de servidor WSGI, HTTPS, `FEIRA_COOKIE_SECURE=1`, gestão de segredos, backups e política de retenção. A acessibilidade foi projetada e inspecionada localmente, sem teste com leitor de tela ou representante externo.
 
-`.github/workflows/tests.yml` prepara os testes no GitHub Actions. Configuração escrita não equivale a execução remota. GitHub público, PR/revisão externa e CI remoto permanecem pendentes até publicação e execução efetivas.
+Código publicado em [miguelLuzz/feira-comunitaria-digital](https://github.com/miguelLuzz/feira-comunitaria-digital). O [PR #1](https://github.com/miguelLuzz/feira-comunitaria-digital/pull/1) incluiu testes e workflow e foi integrado após dois checks aprovados. A [execução remota de testes](https://github.com/miguelLuzz/feira-comunitaria-digital/actions/runs/36428240945) passou nos nove testes em 1,482s, em 28/09/2026. Não houve aprovação por revisor externo, entrevista ou validação de campo.
 
 ## Referências
 
