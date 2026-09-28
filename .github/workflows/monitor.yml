@@ -1,0 +1,54 @@
+name: Monitoramento HTTP
+on:
+  push:
+    paths:
+      - '.github/workflows/monitor.yml'
+  schedule:
+    - cron: '17 * * * *'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: monitoramento-http
+  cancel-in-progress: true
+jobs:
+  disponibilidade:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verificar catalogo publico
+        env:
+          CHECK_URL: https://miguelg1.pythonanywhere.com/
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          import sys
+          import time
+          from datetime import datetime, timezone
+          from pathlib import Path
+          from urllib.request import Request, urlopen
+          from urllib.error import HTTPError, URLError
+          started = time.monotonic()
+          status, code = 'DOWN', None
+          try:
+              request = Request(os.environ['CHECK_URL'], headers={'User-Agent': 'Feira-Academic-Monitor/1.0'})
+              with urlopen(request, timeout=20) as response:
+                  code = response.status
+                  body = response.read(1024 * 1024)
+                  if code == 200 and b'Feira Comunit' in body:
+                      status = 'UP'
+          except HTTPError as error:
+              code = error.code
+          except (URLError, TimeoutError, OSError):
+              pass
+          timestamp = datetime.now(timezone.utc).isoformat()
+          latency = round((time.monotonic() - started) * 1000)
+          print(json.dumps({'timestamp_utc': timestamp, 'status': status, 'http_status': code, 'latency_ms': latency}))
+          summary = chr(10).join([f"# Disponibilidade do MVP: {status}", "", "URL: " + os.environ["CHECK_URL"], "", f"Horario UTC: {timestamp}", "", f"HTTP: {code} | Latencia: {latency} ms", "", "Verificacao pontual do catalogo; agenda horaria. Nao comprova uso comunitario."])
+          Path(os.environ['GITHUB_STEP_SUMMARY']).write_text(summary)
+          sys.exit(0 if status == 'UP' else 1)
+          PY
