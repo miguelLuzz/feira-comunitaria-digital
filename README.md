@@ -1,6 +1,6 @@
 # Feira Comunitária Digital — Python/Flask/SQLite
 
-MVP acadêmico local, criado a partir do planejamento da Experiência II. Cenário e dados fictícios. Não houve entrevista, validação externa ou implantação pública. A versão Node.js foi a demonstração preliminar; esta versão aplica a tecnologia Python selecionada.
+MVP acadêmico, criado a partir do planejamento da Experiência II. Cenário e dados fictícios. Não houve entrevista ou validação externa. A versão demonstrativa foi publicada em https://miguelg1.pythonanywhere.com/ em 28/09/2026. A versão Node.js foi a demonstração preliminar; esta versão aplica a tecnologia Python selecionada.
 
 ## Executar (Python 3.12)
 
@@ -25,9 +25,20 @@ Regras de estoque e cancelamento; dados inválidos; concorrência pela última u
 
 ## Limitações e publicação
 
-Há um único produtor administrador; contas múltiplas, pagamentos e agendamento de retirada não estão implementados. A sessão administrativa expira em 30 minutos; o limite por IP é simplificado e precisará ser revisto atrás de proxy. SQLite atende demonstração local, não prova escalabilidade. O ambiente público precisará de servidor WSGI, HTTPS, `FEIRA_COOKIE_SECURE=1`, gestão de segredos, backups e política de retenção. A acessibilidade foi projetada e inspecionada localmente, sem teste com leitor de tela ou representante externo.
+Há um único produtor administrador; contas múltiplas, pagamentos e agendamento de retirada não estão implementados. A sessão administrativa expira em 30 minutos; o limite por IP é simplificado e precisará ser revisto atrás de proxy. SQLite atende à demonstração, sem comprovação de escalabilidade. A hospedagem usa servidor WSGI, HTTPS obrigatório, cookie Secure e configuração privada. Backups automatizados e política de retenção permanecem pendentes. A acessibilidade foi projetada e inspecionada localmente, sem teste com leitor de tela ou representante externo.
 
 Código publicado em [miguelLuzz/feira-comunitaria-digital](https://github.com/miguelLuzz/feira-comunitaria-digital). O [PR #1](https://github.com/miguelLuzz/feira-comunitaria-digital/pull/1) incluiu testes e workflow e foi integrado após dois checks aprovados. A [execução remota de testes](https://github.com/miguelLuzz/feira-comunitaria-digital/actions/runs/36428240945) passou nos nove testes em 1,482s, em 28/09/2026. Não houve aprovação por revisor externo, entrevista ou validação de campo.
+
+## Publicação e monitoramento
+
+- Aplicação demonstrativa: https://miguelg1.pythonanywhere.com/
+- PythonAnywhere Beginner, Python 3.12 e Flask 3.1.3, com ambiente virtual e SQLite em armazenamento persistente fora do repositório. A senha do produtor e o segredo de sessão foram gerados na hospedagem e não estão no GitHub.
+- Reserva pública de duas alfaces: estoque 8 → 6. Após recarga do servidor, a reserva permaneceu acessível; o cancelamento repôs estoque 8. Dados demonstrativos.
+- Nove testes também passaram no ambiente da hospedagem em 4,739s.
+- Workflow `.github/workflows/monitor.yml`: consulta horária e execução manual, com timeout de 20s, status UP/DOWN e resumo com HTTP/latência. A agenda pode atrasar.
+- Primeira execução: https://github.com/miguelLuzz/feira-comunitaria-digital/actions/runs/36481337724 — UP, HTTP 200, 226ms em 28/09/2026 às 20:44:39 UTC.
+- O plano gratuito exige renovação manual mensal. Expiração observada: 28/10/2026.
+- Não foram confirmados alertas por e-mail, disponibilidade histórica, validação comunitária ou impacto social.
 
 ## Referências
 
