@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="pt-BR">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Feira Comunitária Digital</title>
+<style>
+:root{font:17px/1.5 system-ui;color:#173428;background:#f3f6f2}
+body{margin:0} header{background:#174f38;color:white;padding:1.25rem max(1rem,calc((100vw - 60rem)/2))}
+main{max-width:60rem;margin:auto;padding:1rem} h1,p{margin:.25rem 0 .75rem}
+#catalogo{display:grid;gap:1rem;grid-template-columns:repeat(auto-fit,minmax(13rem,1fr))}
+article,section#pedidos{background:white;border:1px solid #bdcfc4;border-radius:.75rem;padding:1rem}
+section#pedidos{margin-top:1rem} button,input,select{font:inherit;min-height:44px}
+button{background:#174f38;color:white;border:0;border-radius:.35rem;padding:.25rem .75rem;cursor:pointer}
+button:disabled{opacity:.55;cursor:default} input{width:4rem} :focus-visible{outline:3px solid #ad5600;outline-offset:3px}
+li{margin:.5rem 0} .aviso{color:#38594a}
+</style>
+<header><h1>Feira Comunitária Digital</h1><p>Catálogo e simulação de reserva</p></header>
+<main>
+<p class="aviso">Demonstração acadêmica com produtos fictícios. As reservas ficam apenas neste navegador. Não há pagamentos, retirada real ou estoque compartilhado.</p>
+<label for="categoria">Categoria</label>
+<select id="categoria"><option value="">Todas</option><option>Hortaliças</option><option>Frutas</option></select>
+<h2>Catálogo</h2><div id="catalogo"></div>
+<section id="pedidos"><h2>Minhas reservas</h2><ul id="lista"></ul><p id="mensagem" role="status" aria-live="polite"></p></section>
+<noscript>Ative o JavaScript para usar a demonstração.</noscript>
+</main>
+<script>
+'use strict';
+const produtos = [
+  {nome:'Alface', categoria:'Hortaliças', preco:4, estoque:8},
+  {nome:'Tomate', categoria:'Hortaliças', preco:7, estoque:12},
+  {nome:'Banana', categoria:'Frutas', preco:6, estoque:10}
+];
+const chave = 'feira-comunitaria-demo-v1';
+const moeda = new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'});
+const el = id => document.getElementById(id);
+const item = (tag,texto) => Object.assign(document.createElement(tag),{textContent:texto});
+function carregar() {
+  try {
+    const dados = JSON.parse(localStorage.getItem(chave));
+    return Array.isArray(dados) ? dados.filter(r => r && produtos[r.produto] &&
+      Number.isInteger(r.qtd) && r.qtd > 0 && r.qtd <= produtos[r.produto].estoque) : [];
+  } catch { return []; }
+}
+let reservas = carregar();
+function atualizar(novas, mensagem) {
+  try {localStorage.setItem(chave,JSON.stringify(novas));} catch {
+    mensagem += ' Seu navegador não permite salvar a reserva após recarregar.';
+  }
+  reservas = novas;
+  renderizar();
+  el('mensagem').textContent = mensagem;
+}
+function renderizar() {
+  el('catalogo').replaceChildren();
+  produtos.forEach((p,i) => {
+    if (el('categoria').value && el('categoria').value !== p.categoria) return;
+    const disponivel = Math.max(0,p.estoque-reservas.filter(r=>r.produto===i).reduce((n,r)=>n+r.qtd,0));
+    const card = item('article',''), form = item('form','');
+    const campo = item('input','');
+    Object.assign(campo,{id:'qtd-'+i,type:'number',min:'1',max:String(disponivel),required:true,value:disponivel?'1':'0',disabled:!disponivel});
+    const rotulo = item('label','Quantidade: '); rotulo.htmlFor = campo.id;
+    const botao = item('button','Reservar '+p.nome.toLowerCase()); botao.disabled = !disponivel;
+    form.append(rotulo,campo,' ',botao);
+    form.addEventListener('submit',event=>{
+      event.preventDefault();
+      const qtd = campo.valueAsNumber;
+      if (!Number.isInteger(qtd) || qtd<1 || qtd>disponivel) return;
+      atualizar([...reservas,{produto:i,qtd}], 'Reserva simulada: '+qtd+' × '+p.nome+' — '+moeda.format(qtd*p.preco)+'.');
+      el('lista').querySelector('button:last-child')?.focus();
+    });
+    card.append(item('h3',p.nome),item('p',p.categoria+' · '+moeda.format(p.preco)),item('p','Disponível: '+disponivel),form);
+    el('catalogo').append(card);
+  });
+  el('lista').replaceChildren();
+  if (!reservas.length) el('lista').append(item('li','Nenhuma reserva simulada.'));
+  reservas.forEach((r,i)=>{
+    const p=produtos[r.produto], linha=item('li',r.qtd+' × '+p.nome+' — '+moeda.format(r.qtd*p.preco)+' ');
+    const botao=item('button','Cancelar');
+    botao.setAttribute('aria-label','Cancelar reserva de '+p.nome);
+    botao.addEventListener('click',()=>{
+      atualizar(reservas.filter((_,j)=>i!==j),'Reserva de '+p.nome+' cancelada.');
+      el('categoria').focus();
+    });
+    linha.append(botao);
+    el('lista').append(linha);
+  });
+}
+el('categoria').addEventListener('change',renderizar);
+window.addEventListener('storage',event=>{if(event.key===chave || event.key===null){reservas=carregar();renderizar();}});
+renderizar();
+</script>
+</html>
